@@ -5,6 +5,9 @@
 (defn log [x]
   (.log js/console (str x)))
 
+(defn dir [x]
+  (.dir js/console x))
+
 (def text "I learned to code when I was a kid.
   I learned in C++, because that was the language that a game called Wolfenstein 3d was built in.
 
@@ -67,12 +70,24 @@
     (paragraphs-to-map
      (filter not-empty? paragraphs))))
 
+(defn get-selection-rect-row []
+  (-> (.getSelection js/document)
+      (.getRangeAt 0)
+      (.getBoundingClientRect)))
+
+(defn get-selection-rect []
+  (let [rect-row (get-selection-rect-row)]
+    (assoc {}
+           :top (.-top rect-row)
+           :left (.-left rect-row))))
+
 (def article
   (atom
    {:paragraphs (text-to-paragraphs text)}))
 
 ;; -------------------------
 ;; Views
+
 
 
 (defn post []
