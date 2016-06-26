@@ -6,6 +6,7 @@
 
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                  [org.clojure/clojurescript "1.9.92" :scope "provided"]
+                 [alandipert/storage-atom "2.0.1"]
                  [reagent "0.6.0-rc"]
                  [reagent-forms "0.5.24"]]
 

@@ -1,5 +1,6 @@
 (ns inkitt.core
   (:require [reagent.core :as reagent :refer [atom]]
+            [alandipert.storage-atom :refer [local-storage]]
             [clojure.string :refer [split-lines trim]]))
 
 (defn log [x]
@@ -82,8 +83,10 @@
            :left (.-left rect-row))))
 
 (def article
-  (atom
-   {:paragraphs (text-to-paragraphs text)}))
+  (local-storage
+   (atom
+    {:paragraphs (text-to-paragraphs text)})
+   :article))
 
 (def comment-popover-position
   (atom {:left 0 :top 0}))
@@ -125,6 +128,7 @@
              (.getElementById js/document)
              (.-value))
         ""))
+
 (defn submit-comment []
   (let [new-comment (get-new-comment)]
     (swap! article
@@ -146,16 +150,32 @@
      "Submit"]]
    ])
 
+
 (defn comment-button-popover []
   (let []
     [:div.inkitt-comment-popover
      {:class (when @show-comment-popover "show")
-      :style @comment-popover-position}
+      :style @comment-popover-position
+      }
      [:button.btn.btn-primary
       {:on-click toggle-comment-box}
-      [:i.glyphicon.glyphicon-comment]]])
+      [:i.glyphicon.glyphicon-comment
+       ]]])
   )
 
+(def show-comment-list (atom nil))
+(def comment-list-position (atom {}))
+
+(def mouse-top (atom {}))
+(defn swap-mouse-top [e]
+  (when-not @show-comment-list
+    (swap! mouse-top
+         assoc :top (.-pageY e))))
+
+(defn toggle-comment-list []
+  (reset! comment-list-position {})
+  (swap! show-comment-list not)
+  )
 (defn post [article]
   (fn [article]
     (log "draw article")
@@ -172,17 +192,32 @@
           (:text p)]
          
          [:div.comment
+          {:on-mouse-move swap-mouse-top}
           (when-not (-> p :comments empty?)
-            [:i.glyphicon.glyphicon-asterisk])
-          ]])
-      
-      ))]))
-(:7f07877b-3a68-4bea-bd6c-ac07a6f345e4 @article)
+            [:i.glyphicon.glyphicon-asterisk.pointer
+             {:on-click
+              (fn [e]
+                (reset! selected-p-key p-key)
+                (toggle-comment-list))}])]])))]))
+
+
+(defn comment-list []
+  [:div.inkitt-add-comment
+   {:class (when @show-comment-list "show")
+    :style @mouse-top}
+   [:div.comment-content
+    [:h4 "Comments"]
+    (let [comments (get-in @article [:paragraphs @selected-p-key :comments])]
+      (for [c comments]
+        [:div
+         [:div.comment-item c]
+         [:hr]]))]])
+
 (defn home-page []
   [:div
-
    [comment-button-popover]
    [add-comment-box]
+   [comment-list]
    [post article]])
 
 ;; -------------------------

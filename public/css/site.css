@@ -31,7 +31,7 @@
     display: none;
 
 }
-.inkitt-add-comment .comment-content {
+.comment-content {
     border: 1px solid lightgrey;
     border-radius: 5px;
     background: white;
@@ -45,4 +45,8 @@
     margin-bottom: 5px;
     height: 120px;
     width: 100%
+}
+
+.pointer {
+    cursor: pointer
 }
