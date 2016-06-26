@@ -1,36 +1,6 @@
-body {
-  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
-  max-width: 600px;
-  margin: 0 auto;
-  padding-top: 72px;
-  -webkit-font-smoothing: antialiased;
-  font-size: 1.125em;
-  color: #333;
-  line-height: 1.5em;
-}
-
-h1, h2, h3 {
-  color: #000;
-}
-h1 {
-  font-size: 2.5em
-}
-
-h2 {
-  font-size: 2em
-}
-
-h3 {
-  font-size: 1.5em
-}
-
-a {
-  text-decoration: none;
-  color: #09f;
-}
-
-a:hover {
-  text-decoration: underline;
+.content {
+    padding: 30px;
+    font-size: 14pt
 }
 
 .inkitt-paragraph {
@@ -44,6 +14,35 @@ a:hover {
 .inkitt-paragraph .comment {
     width: 5%;
     float: right;
-    margin-top: 18px;
 
+}
+.inkitt-comment-popover {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 5px;
+    display: none;
+    margin-top: -45px
+    
+}
+.inkitt-add-comment {
+    position: absolute;
+    width: 100%;
+    display: none;
+
+}
+.inkitt-add-comment .comment-content {
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+    background: white;
+    padding: 20px;
+    margin: 10px;
+    width: 300px;
+    float: right;
+
+}
+.inkitt-add-comment .comment-content textarea {
+    margin-bottom: 5px;
+    height: 120px;
+    width: 100%
 }
