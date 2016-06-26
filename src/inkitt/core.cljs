@@ -120,12 +120,20 @@
        (.getElementById js/document)
        (.-value)))
 
+(defn clean-new-comment []
+  (set! (->> "new-comment"
+             (.getElementById js/document)
+             (.-value))
+        ""))
 (defn submit-comment []
   (let [new-comment (get-new-comment)]
     (swap! article
            update-in [:paragraphs @selected-p-key :comments]
            #(conj % new-comment))
-    (reset! show-comment-box nil)))
+    (clean-new-comment)
+    (reset! show-comment-box nil)
+    (reset! show-comment-popover nil)
+))
 
 (defn add-comment-box []
   [:div.inkitt-add-comment
@@ -163,7 +171,10 @@
           {:on-mouse-up (show-popover-handler p-key)}
           (:text p)]
          
-         [:div.comment (count (:comments p))]])
+         [:div.comment
+          (when-not (-> p :comments empty?)
+            [:i.glyphicon.glyphicon-asterisk])
+          ]])
       
       ))]))
 (:7f07877b-3a68-4bea-bd6c-ac07a6f345e4 @article)
