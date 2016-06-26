@@ -2,6 +2,9 @@
   (:require [reagent.core :as reagent :refer [atom]]
             [clojure.string :refer [split-lines trim]]))
 
+(defn log [x]
+  (.log js/console (str x)))
+
 (def text "I learned to code when I was a kid.
   I learned in C++, because that was the language that a game called Wolfenstein 3d was built in.
 
@@ -41,10 +44,28 @@
   (not (empty?
         (trim line))))
 
+(defn create-paragraph-item [p-text]
+  (assoc {} :text p-text :comments []))
+
+(defn assoc-paragraph-item [assoc-to p-text]
+  (assoc assoc-to
+       (-> (random-uuid) str keyword)
+       (create-paragraph-item p-text)))
+
+(defn paragraphs-to-map
+  ([paragraphs] (paragraphs-to-map paragraphs {}))
+  ([paragraphs mapped]
+   (if (empty? paragraphs)
+     mapped
+     (let [p-text (first paragraphs)
+           updated-mapped (assoc-paragraph-item mapped
+                                                p-text)]
+       (recur (rest paragraphs) updated-mapped)))))
+
 (defn text-to-paragraphs [text]
   (let [paragraphs (split-lines text)]
-    (map #(assoc {} :text % :comments [])
-         (filter not-empty? paragraphs))))
+    (paragraphs-to-map
+     (filter not-empty? paragraphs))))
 
 (def article
   (atom
@@ -53,13 +74,19 @@
 ;; -------------------------
 ;; Views
 
+
 (defn post []
   (let [paragraphs (:paragraphs @article)]
     [:div
-     (for [p paragraphs]
-       [:div.inkitt-paragraph
-        [:p (:text p)]
-        [:div.comment (count (:comment p))]]
+     (for [p-key (keys paragraphs)]
+       (let [p (get-in paragraphs [p-key])]
+         [:div.inkitt-paragraph
+          {:key p-key}          
+          [:p
+           {:on-mouse-up #(log p-key)}
+           (:text p)]
+        
+          [:div.comment (count (:comment p))]])
        
        )]))
 (defn home-page []
