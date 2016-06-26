@@ -85,29 +85,94 @@
   (atom
    {:paragraphs (text-to-paragraphs text)}))
 
+(def comment-popover-position
+  (atom {:left 0 :top 0}))
+
+(def selected-p-key (atom nil))
+
+(defn reset-popover-position! []
+  (reset! comment-popover-position
+          (get-selection-rect)))
+
+(defn get-selected-text []
+  (-> (.getSelection js/window)
+      (.toString)))
+
+(def show-comment-popover (atom nil))
+(defn show-popover-handler [p-key]
+  (fn []
+    (let [is-text-selected (not (empty? (get-selected-text)))]
+      (reset! show-comment-popover is-text-selected)
+      (when is-text-selected
+        (log p-key)
+        (reset! selected-p-key p-key)
+        (reset-popover-position!)))))
+
 ;; -------------------------
 ;; Views
 
+(def show-comment-box (atom nil))
+(defn toggle-comment-box []
+  (swap! show-comment-box not))
 
+(defn get-new-comment []
+  (->> "new-comment"
+       (.getElementById js/document)
+       (.-value)))
 
-(defn post []
-  (let [paragraphs (:paragraphs @article)]
-    [:div
-     (for [p-key (keys paragraphs)]
-       (let [p (get-in paragraphs [p-key])]
-         [:div.inkitt-paragraph
-          {:key p-key}          
-          [:p
-           {:on-mouse-up #(log p-key)}
-           (:text p)]
-        
-          [:div.comment (count (:comment p))]])
-       
-       )]))
+(defn submit-comment []
+  (let [new-comment (get-new-comment)]
+    (swap! article
+           update-in [:paragraphs @selected-p-key :comments]
+           #(conj % new-comment))
+    (reset! show-comment-box nil)))
+
+(defn add-comment-box []
+  [:div.inkitt-add-comment
+   {:class (when @show-comment-box "show")}
+   [:div.comment-content
+    [:textarea.form-control
+     {:id "new-comment"}]
+    [:button.btn.btn-primary
+     {:on-click submit-comment}
+     "Submit"]]
+   ])
+
+(defn comment-button-popover []
+  (let []
+    [:div.inkitt-comment-popover
+     {:class (when @show-comment-popover "show")
+      :style @comment-popover-position}
+     [:button.btn.btn-primary
+      {:on-click toggle-comment-box}
+      [:i.glyphicon.glyphicon-comment]]])
+  )
+
+(defn post [article]
+  (fn [article]
+    (log "draw article")
+    [:div.content
+   [:h2 "Inkitt test"]
+   (doall
+    (for [p-key (keys (:paragraphs @article))]
+      (let [p (get-in @article [:paragraphs p-key])]
+        (log (:comments p))
+        [:div.inkitt-paragraph
+         {:key p-key}          
+         [:p
+          {:on-mouse-up (show-popover-handler p-key)}
+          (:text p)]
+         
+         [:div.comment (count (:comments p))]])
+      
+      ))]))
+(:7f07877b-3a68-4bea-bd6c-ac07a6f345e4 @article)
 (defn home-page []
   [:div
-   [:h2 "Inkitt test"]
-   [post]])
+
+   [comment-button-popover]
+   [add-comment-box]
+   [post article]])
 
 ;; -------------------------
 ;; Initialize app
